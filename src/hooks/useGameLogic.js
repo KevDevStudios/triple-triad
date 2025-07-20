@@ -1,3 +1,4 @@
+// useGameLogic.js
 import { useEffect, useState } from "react";
 import { getAIMove } from "../aiLogic";
 import { getRandomCards } from "../cards";
@@ -15,31 +16,6 @@ export default function useGameLogic({ mode, difficulty }) {
   const [flipMap, setFlipMap] = useState({});
   const [hands, setHands] = useState({ P1: [], P2: [] });
   const [moveInProgress, setMoveInProgress] = useState(false);
-
-  const resetGame = () => {
-    setBoard(emptyBoard.map((row) => [...row]));
-    const starter = Math.random() < 0.5 ? "P1" : "P2";
-    setTurn(starter);
-    setScores({ P1: 0, P2: 0 });
-    setMessage(`${starter} goes first!`);
-    setHands({
-      P1: getRandomCards(5),
-      P2: getRandomCards(5),
-    });
-  };
-
-  useEffect(() => {
-    resetGame();
-  }, []);
-
-  useEffect(() => {
-    if (mode === "PVE" && turn === "P2" && hands.P2.length > 0) {
-      setTimeout(() => {
-        const [r, c] = getAIMove(board, difficulty) || [];
-        if (r !== undefined) handleCellClick(r, c, "P2");
-      }, 700);
-    }
-  }, [turn]);
 
   const getFlipDirection = (r, c) => {
     if (r === 0 || r === 2) return "flip-vertical";
@@ -67,6 +43,7 @@ export default function useGameLogic({ mode, difficulty }) {
         }
       }
     }
+
     return flips;
   };
 
@@ -136,6 +113,38 @@ export default function useGameLogic({ mode, difficulty }) {
     }, 600);
   };
 
+  const resetGame = () => {
+    setBoard(emptyBoard.map((row) => [...row]));
+    setHands({ P1: [], P2: [] });
+    setScores({ P1: 0, P2: 0 });
+    setTurn(null);
+    setMessage("Flipping a coin...");
+    setFlipMap({});
+  };
+
+  const initializeWithStarter = (starter) => {
+    const newBoard = Array(3)
+      .fill(null)
+      .map(() => Array(3).fill(null));
+    setBoard(newBoard);
+    setHands({
+      P1: getRandomCards(5),
+      P2: getRandomCards(5),
+    });
+    setScores({ P1: 0, P2: 0 });
+    setTurn(starter);
+    setMessage(`${starter} goes first!`);
+  };
+
+  useEffect(() => {
+    if (mode === "PVE" && turn === "P2" && hands.P2.length > 0) {
+      setTimeout(() => {
+        const [r, c] = getAIMove(board, difficulty) || [];
+        if (r !== undefined) handleCellClick(r, c, "P2");
+      }, 700);
+    }
+  }, [turn]);
+
   return {
     board,
     turn,
@@ -143,7 +152,9 @@ export default function useGameLogic({ mode, difficulty }) {
     message,
     flipMap,
     hands,
+    moveInProgress,
     handleCellClick,
     resetGame,
+    initializeWithStarter,
   };
 }
