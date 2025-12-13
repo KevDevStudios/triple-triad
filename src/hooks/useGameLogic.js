@@ -144,10 +144,11 @@ export default function useGameLogic({ mode, difficulty }) {
   useEffect(() => {
     if (mode === "PVE" && turn === "P2" && hands.P2.length > 0) {
       setTimeout(() => {
-        const [r, c] = getAIMove(board, difficulty) || [];
+        const [r, c] = getAIMove(board, difficulty, hands.P2) || [];
         if (r !== undefined) handleCellClick(r, c, "P2");
       }, 700);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [turn]);
 
   return {

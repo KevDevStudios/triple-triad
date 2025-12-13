@@ -6,6 +6,7 @@ import useMusicPlayer from "./hooks/useMusicPlayer";
 import GameBoard from "./components/GameBoard";
 import MusicControl from "./components/MusicControl";
 import PlayerHand from "./components/PlayerHand";
+import Confetti from "./components/Confetti";
 
 export default function Game({ mode, difficulty }) {
   const {
@@ -47,6 +48,7 @@ export default function Game({ mode, difficulty }) {
 
   useEffect(() => {
     startWithCoinFlip();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const guardedClick = (r, c) => {
     if (showCoinFlip || moveInProgress || (mode === "PVE" && turn === "P2"))
@@ -105,23 +107,26 @@ export default function Game({ mode, difficulty }) {
       <GameBoard board={board} flipMap={flipMap} onCellClick={guardedClick} />
 
       {isGameOver && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
-          <div className="bg-gradient-to-br from-purple-800 to-indigo-900 text-white p-8 rounded-2xl shadow-2xl text-center space-y-6 border-4 border-yellow-400 max-w-md">
-            <h2 className="text-4xl font-bold animate-pulse">{message}</h2>
-            <div className="text-6xl">
-              {message.includes("Player 1") ? "🏆" : message.includes("Player 2") ? "🎖️" : "🤝"}
+        <>
+          <Confetti />
+          <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
+            <div className="bg-gradient-to-br from-purple-800 to-indigo-900 text-white p-8 rounded-2xl shadow-2xl text-center space-y-6 border-4 border-yellow-400 max-w-md">
+              <h2 className="text-4xl font-bold animate-pulse">{message}</h2>
+              <div className="text-6xl">
+                {message.includes("Player 1") ? "🏆" : message.includes("Player 2") ? "🎖️" : "🤝"}
+              </div>
+              <div className="text-xl">
+                Final Score: {scores.P1} - {scores.P2}
+              </div>
+              <button
+                onClick={handleRestart}
+                className="mt-4 w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-black font-bold py-3 px-6 rounded-full text-lg shadow-lg transition-all duration-300 transform hover:scale-105"
+              >
+                🎮 Play Again
+              </button>
             </div>
-            <div className="text-xl">
-              Final Score: {scores.P1} - {scores.P2}
-            </div>
-            <button
-              onClick={handleRestart}
-              className="mt-4 w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-black font-bold py-3 px-6 rounded-full text-lg shadow-lg transition-all duration-300 transform hover:scale-105"
-            >
-              🎮 Play Again
-            </button>
           </div>
-        </div>
+        </>
       )}
 
       <div className="text-center mt-4">
