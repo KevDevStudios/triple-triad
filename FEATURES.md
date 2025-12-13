@@ -36,6 +36,18 @@ A beautiful, feature-rich implementation of the classic Triple Triad card game w
   - Card flip/capture sound
   - Victory sound when game ends
 
+### 🎥 Gameplay Recording
+- **Record gameplay videos** to watch later or share with friends
+- **Recording controls** in the top-left corner:
+  - 🎥 Record button to start capturing gameplay
+  - ⏹️ Stop button to end recording (with pulsing animation)
+  - 💾 Download button to save your recorded video
+- **Browser-based recording** using the MediaRecorder API
+  - No external software required
+  - Records at high quality (up to 1080p)
+  - Saves as WebM format for wide compatibility
+  - Option to record just the game window or entire screen
+
 ### 🎮 Enhanced User Interface
 - **Stunning start screen** with:
   - Animated gradient background with pulsing orbs
@@ -88,9 +100,11 @@ npm run build
 1. **Select Difficulty**: Choose from Easy, Medium, or Hard
 2. **Start Game**: Click the "Start Game" button
 3. **Coin Flip**: A coin flip determines who goes first
-4. **Place Cards**: Click an empty cell to place your card
-5. **Capture Cards**: If your card's value beats an adjacent opponent card, you capture it!
-6. **Win Condition**: The player with the most cards at the end wins
+4. **Record Gameplay** (Optional): Click the 🎥 Record button to start recording your game
+5. **Place Cards**: Click an empty cell to place your card
+6. **Capture Cards**: If your card's value beats an adjacent opponent card, you capture it!
+7. **Win Condition**: The player with the most cards at the end wins
+8. **Save Recording**: Click the ⏹️ button to stop recording, then 💾 to download your gameplay video
 
 ## 🎨 Card Elements
 
