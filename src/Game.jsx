@@ -28,6 +28,7 @@ export default function Game({ mode, difficulty }) {
   const {
     isRecording,
     hasRecording,
+    error,
     startRecording,
     stopRecording,
     downloadRecording,
@@ -80,6 +81,7 @@ export default function Game({ mode, difficulty }) {
       <RecordingControls
         isRecording={isRecording}
         hasRecording={hasRecording}
+        error={error}
         onStartRecording={startRecording}
         onStopRecording={stopRecording}
         onDownloadRecording={downloadRecording}

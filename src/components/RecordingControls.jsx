@@ -2,15 +2,24 @@
 import React from "react";
 import PropTypes from "prop-types";
 
+const Z_INDEX_RECORDING_CONTROLS = 40;
+
 export default function RecordingControls({
   isRecording,
   hasRecording,
+  error,
   onStartRecording,
   onStopRecording,
   onDownloadRecording,
 }) {
   return (
-    <div className="fixed top-4 left-4 z-40 flex flex-col gap-2">
+    <div className="fixed top-4 left-4 flex flex-col gap-2" style={{ zIndex: Z_INDEX_RECORDING_CONTROLS }}>
+      {error && (
+        <div className="bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm max-w-xs">
+          ⚠️ {error}
+        </div>
+      )}
+      
       {!isRecording && !hasRecording && (
         <button
           onClick={onStartRecording}
@@ -60,6 +69,7 @@ export default function RecordingControls({
 RecordingControls.propTypes = {
   isRecording: PropTypes.bool.isRequired,
   hasRecording: PropTypes.bool.isRequired,
+  error: PropTypes.string,
   onStartRecording: PropTypes.func.isRequired,
   onStopRecording: PropTypes.func.isRequired,
   onDownloadRecording: PropTypes.func.isRequired,
