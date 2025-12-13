@@ -2,6 +2,25 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Triple Triad - Card Game with Gameplay Recording 🎮
+
+A beautiful implementation of the classic Triple Triad card game featuring:
+- 🃏 30 unique monster cards with element-based graphics
+- 🎵 Background music and sound effects
+- 🎥 **Gameplay recording** to capture and share your matches
+- 🤖 AI opponents with three difficulty levels
+- ✨ Stunning visual effects and animations
+
+### 🎥 Recording Your Gameplay
+
+The game includes a built-in recording feature that allows you to capture your gameplay:
+1. Click the **🎥 Record** button in the top-left corner during gameplay
+2. Play your game as normal - all actions are being recorded
+3. Click **⏹️ Stop** when you're finished
+4. Click **💾 Download** to save your gameplay video
+
+The recording uses your browser's built-in screen capture API, so no external software is needed!
+
 ## Available Scripts
 
 In the project directory, you can run:
