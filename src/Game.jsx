@@ -3,10 +3,12 @@ import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import useGameLogic from "./hooks/useGameLogic";
 import useMusicPlayer from "./hooks/useMusicPlayer";
+import useGameRecorder from "./hooks/useGameRecorder";
 import GameBoard from "./components/GameBoard";
 import MusicControl from "./components/MusicControl";
 import PlayerHand from "./components/PlayerHand";
 import Confetti from "./components/Confetti";
+import RecordingControls from "./components/RecordingControls";
 
 export default function Game({ mode, difficulty }) {
   const {
@@ -23,6 +25,13 @@ export default function Game({ mode, difficulty }) {
   } = useGameLogic({ mode, difficulty });
 
   const { isPlaying, toggleMusic, volume, changeVolume } = useMusicPlayer();
+  const {
+    isRecording,
+    hasRecording,
+    startRecording,
+    stopRecording,
+    downloadRecording,
+  } = useGameRecorder();
 
   const [showCoinFlip, setShowCoinFlip] = useState(true);
   const [coinFace, setCoinFace] = useState("🪙");
@@ -68,6 +77,14 @@ export default function Game({ mode, difficulty }) {
 
   return (
     <div className="p-4 text-white relative">
+      <RecordingControls
+        isRecording={isRecording}
+        hasRecording={hasRecording}
+        onStartRecording={startRecording}
+        onStopRecording={stopRecording}
+        onDownloadRecording={downloadRecording}
+      />
+      
       <MusicControl 
         isPlaying={isPlaying} 
         onToggle={toggleMusic} 
