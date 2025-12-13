@@ -48,6 +48,7 @@ export default function Game({ mode, difficulty }) {
 
   useEffect(() => {
     startWithCoinFlip();
+    // Only run once on mount to initialize the game
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const guardedClick = (r, c) => {

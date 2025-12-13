@@ -148,6 +148,8 @@ export default function useGameLogic({ mode, difficulty }) {
         if (r !== undefined) handleCellClick(r, c, "P2");
       }, 700);
     }
+    // Only trigger on turn changes to avoid infinite loops
+    // board, difficulty, handleCellClick, and hands are stable references
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [turn]);
 

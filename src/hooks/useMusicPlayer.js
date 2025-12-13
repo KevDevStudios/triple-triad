@@ -22,8 +22,7 @@ export default function useMusicPlayer(musicFile = '/sounds/background-music.mp3
         audioRef.current = null;
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [musicFile]);
+  }, [musicFile, volume]);
 
   useEffect(() => {
     if (audioRef.current) {
