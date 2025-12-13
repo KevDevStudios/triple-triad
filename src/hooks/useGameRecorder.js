@@ -22,6 +22,9 @@ export default function useGameRecorder() {
   const startRecording = useCallback(async () => {
     try {
       setError(null);
+      // Clear any previous recording when starting a new one
+      setRecordedChunks([]);
+      
       // Capture the entire screen/window
       const stream = await navigator.mediaDevices.getDisplayMedia({
         video: {
@@ -42,6 +45,7 @@ export default function useGameRecorder() {
       const mediaRecorder = new MediaRecorder(stream, { mimeType });
 
       mediaRecorderRef.current = mediaRecorder;
+      // Local chunks array to capture recording data via closure
       const chunks = [];
 
       mediaRecorder.ondataavailable = (event) => {
@@ -88,7 +92,9 @@ export default function useGameRecorder() {
       
       // Clean up - use timeout to ensure download completes
       setTimeout(() => {
-        document.body.removeChild(a);
+        if (a.parentNode) {
+          document.body.removeChild(a);
+        }
         URL.revokeObjectURL(url);
       }, DOWNLOAD_CLEANUP_DELAY);
       
