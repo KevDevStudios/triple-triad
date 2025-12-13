@@ -7,6 +7,8 @@ const emptyBoard = Array(3)
   .fill(null)
   .map(() => Array(3).fill(null));
 const flipSound = new Audio("/sounds/flip.mp3");
+const cardPlaceSound = new Audio("/sounds/card-place.mp3");
+const winSound = new Audio("/sounds/win.mp3");
 
 export default function useGameLogic({ mode, difficulty }) {
   const [board, setBoard] = useState(emptyBoard);
@@ -74,6 +76,8 @@ export default function useGameLogic({ mode, difficulty }) {
     const newBoard = board.map((row) => [...row]);
     newBoard[r][c] = newCard;
 
+    cardPlaceSound.play();
+
     const flips = getFlippableNeighbors(newBoard, r, c, newCard, player);
     if (Object.keys(flips).length > 0) flipSound.play();
 
@@ -98,6 +102,7 @@ export default function useGameLogic({ mode, difficulty }) {
       const allFilled = newBoard.flat().every((cell) => cell !== null);
       const finalScores = calculateScores(newBoard);
       if (allFilled) {
+        winSound.play();
         setMessage(
           finalScores.P1 > finalScores.P2
             ? "Player 1 wins!"
@@ -139,10 +144,13 @@ export default function useGameLogic({ mode, difficulty }) {
   useEffect(() => {
     if (mode === "PVE" && turn === "P2" && hands.P2.length > 0) {
       setTimeout(() => {
-        const [r, c] = getAIMove(board, difficulty) || [];
+        const [r, c] = getAIMove(board, difficulty, hands.P2) || [];
         if (r !== undefined) handleCellClick(r, c, "P2");
       }, 700);
     }
+    // Only trigger on turn changes to avoid infinite loops
+    // board, difficulty, handleCellClick, and hands are stable references
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [turn]);
 
   return {

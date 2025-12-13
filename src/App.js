@@ -5,7 +5,7 @@ import Game from "./Game";
 export default function App() {
   const [showGame, setShowGame] = useState(false);
   const [difficulty, setDifficulty] = useState("easy");
-  const [mode, setMode] = useState("PVE"); // Default to PVE for now
+  const mode = "PVE"; // Default to PVE for now
 
   return (
     <div className="min-h-screen">

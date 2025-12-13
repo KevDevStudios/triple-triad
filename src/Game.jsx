@@ -2,7 +2,11 @@
 import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import useGameLogic from "./hooks/useGameLogic";
+import useMusicPlayer from "./hooks/useMusicPlayer";
 import GameBoard from "./components/GameBoard";
+import MusicControl from "./components/MusicControl";
+import PlayerHand from "./components/PlayerHand";
+import Confetti from "./components/Confetti";
 
 export default function Game({ mode, difficulty }) {
   const {
@@ -11,11 +15,14 @@ export default function Game({ mode, difficulty }) {
     scores,
     message,
     flipMap,
+    hands,
     handleCellClick,
     resetGame,
     moveInProgress,
     initializeWithStarter,
   } = useGameLogic({ mode, difficulty });
+
+  const { isPlaying, toggleMusic, volume, changeVolume } = useMusicPlayer();
 
   const [showCoinFlip, setShowCoinFlip] = useState(true);
   const [coinFace, setCoinFace] = useState("🪙");
@@ -41,6 +48,8 @@ export default function Game({ mode, difficulty }) {
 
   useEffect(() => {
     startWithCoinFlip();
+    // Only run once on mount to initialize the game
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const guardedClick = (r, c) => {
     if (showCoinFlip || moveInProgress || (mode === "PVE" && turn === "P2"))
@@ -59,6 +68,16 @@ export default function Game({ mode, difficulty }) {
 
   return (
     <div className="p-4 text-white relative">
+      <MusicControl 
+        isPlaying={isPlaying} 
+        onToggle={toggleMusic} 
+        volume={volume}
+        onVolumeChange={changeVolume}
+      />
+
+      <PlayerHand cards={hands.P1} player="P1" isActive={turn === "P1"} />
+      <PlayerHand cards={hands.P2} player="P2" isActive={turn === "P2"} />
+      
       {showCoinFlip && (
         <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
           <div
@@ -71,33 +90,52 @@ export default function Game({ mode, difficulty }) {
         </div>
       )}
 
-      <div className="bg-black/60 text-white rounded-lg p-2 text-center text-lg font-bold mb-4 shadow-md">
-        Score: Player 1 — {scores.P1} | Player 2 — {scores.P2}
+      <div className="bg-gradient-to-r from-blue-900/80 via-purple-900/80 to-indigo-900/80 text-white rounded-xl p-4 text-center text-xl font-bold mb-6 shadow-2xl backdrop-blur-sm border-2 border-white/20">
+        <div className="flex justify-around items-center">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">🔵</span>
+            <span>Player 1: <span className="text-blue-300">{scores.P1}</span></span>
+          </div>
+          <div className="text-yellow-300">VS</div>
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">🔴</span>
+            <span>Player 2: <span className="text-red-300">{scores.P2}</span></span>
+          </div>
+        </div>
       </div>
-      <div className="text-lg mb-4 text-center">{message}</div>
+      <div className="text-xl mb-6 text-center font-semibold bg-black/50 rounded-lg py-2 px-4 inline-block mx-auto block">{message}</div>
 
       <GameBoard board={board} flipMap={flipMap} onCellClick={guardedClick} />
 
       {isGameOver && (
-        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
-          <div className="bg-white text-black p-6 rounded-xl shadow-lg text-center space-y-4">
-            <h2 className="text-2xl font-bold">{message}</h2>
-            <button
-              onClick={handleRestart}
-              className="mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Play Again
-            </button>
+        <>
+          <Confetti />
+          <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
+            <div className="bg-gradient-to-br from-purple-800 to-indigo-900 text-white p-8 rounded-2xl shadow-2xl text-center space-y-6 border-4 border-yellow-400 max-w-md">
+              <h2 className="text-4xl font-bold animate-pulse">{message}</h2>
+              <div className="text-6xl">
+                {message.includes("Player 1") ? "🏆" : message.includes("Player 2") ? "🎖️" : "🤝"}
+              </div>
+              <div className="text-xl">
+                Final Score: {scores.P1} - {scores.P2}
+              </div>
+              <button
+                onClick={handleRestart}
+                className="mt-4 w-full bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-300 hover:to-orange-400 text-black font-bold py-3 px-6 rounded-full text-lg shadow-lg transition-all duration-300 transform hover:scale-105"
+              >
+                🎮 Play Again
+              </button>
+            </div>
           </div>
-        </div>
+        </>
       )}
 
-      <div className="text-center">
+      <div className="text-center mt-4">
         <button
           onClick={handleRestart}
-          className="mt-2 bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-4 rounded"
+          className="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-400 hover:to-orange-500 text-black font-bold py-3 px-6 rounded-lg shadow-lg transition-all duration-300 transform hover:scale-105"
         >
-          Restart Game
+          🔄 Restart Game
         </button>
       </div>
     </div>
