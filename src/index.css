@@ -8,3 +8,41 @@ body {
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
   min-height: 100vh;
 }
+
+:root {
+  --tt-card-w: 165px;
+  --tt-card-h: 225px;
+
+  --tt-hand-card-w: 95px;
+  --tt-hand-card-h: 132px;
+}
+
+@media (max-height: 900px) {
+  :root {
+    --tt-card-w: 145px;
+    --tt-card-h: 198px;
+
+    --tt-hand-card-w: 88px;
+    --tt-hand-card-h: 122px;
+  }
+}
+
+@media (max-height: 800px) {
+  :root {
+    --tt-card-w: 130px;
+    --tt-card-h: 178px;
+
+    --tt-hand-card-w: 82px;
+    --tt-hand-card-h: 114px;
+  }
+}
+
+@media (max-height: 700px) {
+  :root {
+    --tt-card-w: 115px;
+    --tt-card-h: 158px;
+
+    --tt-hand-card-w: 75px;
+    --tt-hand-card-h: 104px;
+  }
+}

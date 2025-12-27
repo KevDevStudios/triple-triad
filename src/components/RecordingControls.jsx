@@ -13,7 +13,7 @@ export default function RecordingControls({
   onDownloadRecording,
 }) {
   return (
-    <div className="fixed top-4 left-4 flex flex-col gap-2" style={{ zIndex: Z_INDEX_RECORDING_CONTROLS }}>
+    <div className="flex flex-col gap-2" style={{ zIndex: Z_INDEX_RECORDING_CONTROLS }}>
       {error && (
         <div className="bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm max-w-xs">
           ⚠️ {error}

@@ -6,8 +6,9 @@ import CardCell from "./CardCell";
 export default function GameBoard({ board, flipMap, onCellClick }) {
   return (
     <div className="relative">
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-blue-900/20 rounded-2xl blur-xl"></div>
-      <div className="grid grid-cols-3 gap-4 w-[420px] h-[420px] mx-auto mb-4 p-4 bg-black/30 rounded-2xl backdrop-blur-sm relative z-10 shadow-2xl border-2 border-white/10">
+      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/25 to-blue-900/25 rounded-3xl blur-2xl"></div>
+      <div className="relative z-10 w-fit mx-auto p-4 rounded-3xl bg-black/40 backdrop-blur-md shadow-2xl border border-white/15">
+        <div className="grid grid-cols-3 gap-3">
         {board.map((row, r) =>
           row.map((cell, c) => {
             const key = `${r}-${c}`;
@@ -23,6 +24,7 @@ export default function GameBoard({ board, flipMap, onCellClick }) {
             );
           })
         )}
+        </div>
       </div>
     </div>
   );

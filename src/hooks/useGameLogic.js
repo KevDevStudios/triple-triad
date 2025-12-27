@@ -1,14 +1,11 @@
 // useGameLogic.js
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getAIMove } from "../aiLogic";
 import { getRandomCards } from "../cards";
 
 const emptyBoard = Array(3)
   .fill(null)
   .map(() => Array(3).fill(null));
-const flipSound = new Audio("/sounds/flip.mp3");
-const cardPlaceSound = new Audio("/sounds/card-place.mp3");
-const winSound = new Audio("/sounds/win.mp3");
 
 export default function useGameLogic({ mode, difficulty }) {
   const [board, setBoard] = useState(emptyBoard);
@@ -18,22 +15,43 @@ export default function useGameLogic({ mode, difficulty }) {
   const [flipMap, setFlipMap] = useState({});
   const [hands, setHands] = useState({ P1: [], P2: [] });
   const [moveInProgress, setMoveInProgress] = useState(false);
+  const [selectedCardIndex, setSelectedCardIndex] = useState(null);
+  const [coinFlip, setCoinFlip] = useState({ phase: "idle", target: null });
 
-  const getFlipDirection = (r, c) => {
-    if (r === 0 || r === 2) return "flip-vertical";
-    return "flip-horizontal";
+  const moveInProgressRef = useRef(false);
+  const sfxLastPlayedAtRef = useRef(new Map());
+  const coinFlipTimeoutsRef = useRef({ auto: null, flipDone: null, hide: null });
+
+  const FLIP_ANIMATION_MS = 1400;
+
+  const playSfx = (soundPath, { volume = 0.5, cooldownMs = 0 } = {}) => {
+    try {
+      const now = Date.now();
+      const lastAt = sfxLastPlayedAtRef.current.get(soundPath) || 0;
+      if (cooldownMs > 0 && now - lastAt < cooldownMs) return;
+      sfxLastPlayedAtRef.current.set(soundPath, now);
+
+      const audio = new Audio(soundPath);
+      audio.loop = false;
+      audio.preload = "auto";
+      audio.volume = volume;
+      audio.play().catch(() => {});
+    } catch {
+      // ignore audio errors
+    }
   };
+
 
   const getFlippableNeighbors = (board, r, c, card, player) => {
     const directions = [
-      { dr: -1, dc: 0, own: "top", opp: "bottom" },
-      { dr: 1, dc: 0, own: "bottom", opp: "top" },
-      { dr: 0, dc: -1, own: "left", opp: "right" },
-      { dr: 0, dc: 1, own: "right", opp: "left" },
+      { dr: -1, dc: 0, own: "top", opp: "bottom", dir: "vertical" },
+      { dr: 1, dc: 0, own: "bottom", opp: "top", dir: "vertical" },
+      { dr: 0, dc: -1, own: "left", opp: "right", dir: "horizontal" },
+      { dr: 0, dc: 1, own: "right", opp: "left", dir: "horizontal" },
     ];
     const flips = {};
 
-    for (const { dr, dc, own, opp } of directions) {
+    for (const { dr, dc, own, opp, dir } of directions) {
       const nr = r + dr;
       const nc = c + dc;
       if (nr < 0 || nr > 2 || nc < 0 || nc > 2) continue;
@@ -41,7 +59,7 @@ export default function useGameLogic({ mode, difficulty }) {
       const neighbor = board[nr][nc];
       if (neighbor && neighbor.owner !== player) {
         if (card.values[own] > neighbor.values[opp]) {
-          flips[`${nr}-${nc}`] = { r: nr, c: nc };
+          flips[`${nr}-${nc}`] = { r: nr, c: nc, dir };
         }
       }
     }
@@ -57,38 +75,65 @@ export default function useGameLogic({ mode, difficulty }) {
     return score;
   };
 
-  const handleCellClick = (r, c, player = turn) => {
+  const handleCellClick = (r, c, player = turn, cardIndex = selectedCardIndex) => {
     if (
       board[r][c] ||
       !turn ||
-      moveInProgress ||
+      moveInProgressRef.current ||
       (mode === "PVE" && turn === "P2" && player !== "P2")
     )
       return;
 
+    // For P1, require a card to be selected
+    if (player === "P1" && cardIndex === null) {
+      return;
+    }
+
+    moveInProgressRef.current = true;
     setMoveInProgress(true);
 
     const currentHand = [...hands[player]];
-    const card = currentHand.shift();
-    if (!card) return;
+    // For P1, use selected card; for P2 (AI), use first card
+    const card = player === "P1" ? currentHand[cardIndex] : currentHand.shift();
+    if (!card) {
+      moveInProgressRef.current = false;
+      setMoveInProgress(false);
+      return;
+    }
+    
+    // Remove the selected card from hand
+    if (player === "P1") {
+      currentHand.splice(cardIndex, 1);
+      setSelectedCardIndex(null);
+    }
 
     const newCard = { ...card, owner: player };
     const newBoard = board.map((row) => [...row]);
     newBoard[r][c] = newCard;
 
-    cardPlaceSound.play();
+    playSfx("/sounds/card-place.mp3", { cooldownMs: 80 });
 
     const flips = getFlippableNeighbors(newBoard, r, c, newCard, player);
-    if (Object.keys(flips).length > 0) flipSound.play();
+    const flipKeys = Object.keys(flips);
+    const didFlip = flipKeys.some((k) => {
+      const { r: fr, c: fc } = flips[k];
+      const neighbor = newBoard[fr][fc];
+      return !!neighbor && neighbor.owner !== player;
+    });
 
-    for (const key in flips) {
+    for (const key of flipKeys) {
       const { r: fr, c: fc } = flips[key];
       newBoard[fr][fc] = { ...newBoard[fr][fc], owner: player };
     }
 
-    const flipEntries = Object.keys(flips).reduce((acc, k) => {
-      const [row, col] = k.split("-").map(Number);
-      acc[k] = getFlipDirection(row, col);
+    if (didFlip) {
+      // Keep this fairly high to avoid occasional rapid re-triggers feeling like spam.
+      playSfx("/sounds/flip.mp3", { cooldownMs: 1100 });
+    }
+
+    const flipEntries = flipKeys.reduce((acc, k) => {
+      const flipInfo = flips[k];
+      acc[k] = flipInfo.dir === "vertical" ? "flip-vertical" : "flip-horizontal";
       return acc;
     }, {});
 
@@ -102,7 +147,7 @@ export default function useGameLogic({ mode, difficulty }) {
       const allFilled = newBoard.flat().every((cell) => cell !== null);
       const finalScores = calculateScores(newBoard);
       if (allFilled) {
-        winSound.play();
+        playSfx("/sounds/win.mp3", { cooldownMs: 1000 });
         setMessage(
           finalScores.P1 > finalScores.P2
             ? "Player 1 wins!"
@@ -114,8 +159,15 @@ export default function useGameLogic({ mode, difficulty }) {
       } else {
         setTurn(player === "P1" ? "P2" : "P1");
       }
+      moveInProgressRef.current = false;
       setMoveInProgress(false);
-    }, 600);
+    }, FLIP_ANIMATION_MS);
+  };
+
+  const selectCard = (index) => {
+    if (turn === "P1" && !moveInProgress) {
+      setSelectedCardIndex(index);
+    }
   };
 
   const resetGame = () => {
@@ -125,6 +177,10 @@ export default function useGameLogic({ mode, difficulty }) {
     setTurn(null);
     setMessage("Flipping a coin...");
     setFlipMap({});
+    setSelectedCardIndex(null);
+    moveInProgressRef.current = false;
+    setMoveInProgress(false);
+    setCoinFlip({ phase: "idle", target: null });
   };
 
   const initializeWithStarter = (starter) => {
@@ -137,9 +193,74 @@ export default function useGameLogic({ mode, difficulty }) {
       P2: getRandomCards(5),
     });
     setScores({ P1: 0, P2: 0 });
+    setFlipMap({});
+    setSelectedCardIndex(null);
+    moveInProgressRef.current = false;
+    setMoveInProgress(false);
     setTurn(starter);
     setMessage(`${starter} goes first!`);
   };
+
+  const clearCoinFlipTimeouts = () => {
+    const t = coinFlipTimeoutsRef.current;
+    if (t.auto) clearTimeout(t.auto);
+    if (t.flipDone) clearTimeout(t.flipDone);
+    if (t.hide) clearTimeout(t.hide);
+    coinFlipTimeoutsRef.current = { auto: null, flipDone: null, hide: null };
+  };
+
+  const startNewGameWithCoinFlip = ({ autoFlipAfterMs = 2500, flipDurationMs = 1100, revealMs = 1100 } = {}) => {
+    clearCoinFlipTimeouts();
+
+    // Clear the board/hand immediately so the flip is visible and interaction is disabled.
+    setBoard(emptyBoard.map((row) => [...row]));
+    setHands({ P1: [], P2: [] });
+    setScores({ P1: 0, P2: 0 });
+    setTurn(null);
+    setFlipMap({});
+    setSelectedCardIndex(null);
+    moveInProgressRef.current = false;
+    setMoveInProgress(false);
+
+    setMessage("Flipping a coin...");
+    setCoinFlip({ phase: "awaiting", target: null });
+
+    if (typeof autoFlipAfterMs === "number" && autoFlipAfterMs >= 0) {
+      coinFlipTimeoutsRef.current.auto = setTimeout(() => {
+        triggerCoinFlip({ flipDurationMs, revealMs });
+      }, autoFlipAfterMs);
+    }
+  };
+
+  const triggerCoinFlip = ({ flipDurationMs = 1100, revealMs = 1100 } = {}) => {
+    setCoinFlip((prev) => {
+      if (prev.phase !== "awaiting") return prev;
+
+      clearCoinFlipTimeouts();
+
+      const target = Math.random() < 0.5 ? "P1" : "P2";
+      setMessage("Flipping a coin...");
+
+      coinFlipTimeoutsRef.current.flipDone = setTimeout(() => {
+        initializeWithStarter(target);
+        setMessage(`Coin flip: ${target} goes first!`);
+        setCoinFlip({ phase: "revealed", target });
+
+        coinFlipTimeoutsRef.current.hide = setTimeout(() => {
+          setCoinFlip({ phase: "idle", target: null });
+          setMessage(`${target} goes first!`);
+        }, revealMs);
+      }, flipDurationMs);
+
+      return { phase: "flipping", target };
+    });
+  };
+
+  useEffect(() => {
+    return () => {
+      clearCoinFlipTimeouts();
+    };
+  }, []);
 
   useEffect(() => {
     if (mode === "PVE" && turn === "P2" && hands.P2.length > 0) {
@@ -164,5 +285,10 @@ export default function useGameLogic({ mode, difficulty }) {
     handleCellClick,
     resetGame,
     initializeWithStarter,
+    startNewGameWithCoinFlip,
+    coinFlip,
+    triggerCoinFlip,
+    selectedCardIndex,
+    selectCard,
   };
 }

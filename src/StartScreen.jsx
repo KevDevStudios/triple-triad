@@ -1,13 +1,25 @@
 import React from "react";
 import PropTypes from "prop-types";
+import MusicControl from "./components/MusicControl";
 
 export default function StartScreen({
   onStart,
   onSelectDifficulty,
   difficulty,
+  music,
 }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-purple-950 via-blue-950 to-indigo-900 text-white font-sans transition-all duration-500 relative overflow-hidden">
+      <MusicControl
+        isPlaying={music.isPlaying}
+        onToggle={music.toggleMusic}
+        volume={music.volume}
+        onVolumeChange={music.changeVolume}
+        tracks={music.tracks}
+        trackId={music.trackId}
+        onTrackChange={music.changeTrack}
+      />
+
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden opacity-20">
         <div className="absolute top-10 left-10 w-64 h-64 bg-purple-500 rounded-full blur-3xl animate-pulse"></div>
@@ -54,8 +66,11 @@ export default function StartScreen({
         </div>
       </div>
 
-      <footer className="absolute bottom-4 text-sm text-gray-400 z-10">
-        © 2025 Triple Triad Fan Project - Enhanced Edition
+      <footer className="absolute bottom-4 text-center text-sm text-gray-400 z-10 space-y-1">
+        <p>© 2025 Triple Triad Fan Project - Enhanced Edition</p>
+        <p className="text-xs text-gray-500">
+          Music: CC0 from OpenGameArt.org
+        </p>
       </footer>
     </div>
   );
@@ -65,4 +80,19 @@ StartScreen.propTypes = {
   onStart: PropTypes.func.isRequired,
   onSelectDifficulty: PropTypes.func.isRequired,
   difficulty: PropTypes.string.isRequired,
+  music: PropTypes.shape({
+    isPlaying: PropTypes.bool.isRequired,
+    toggleMusic: PropTypes.func.isRequired,
+    volume: PropTypes.number.isRequired,
+    changeVolume: PropTypes.func.isRequired,
+    tracks: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.string.isRequired,
+        name: PropTypes.string.isRequired,
+        file: PropTypes.string.isRequired,
+      })
+    ).isRequired,
+    trackId: PropTypes.string.isRequired,
+    changeTrack: PropTypes.func.isRequired,
+  }).isRequired,
 };

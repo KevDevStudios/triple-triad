@@ -1,54 +1,89 @@
 // CardCell.jsx
 import React from "react";
 import PropTypes from "prop-types";
-import { elementColors, rarityColors } from "../cards";
+import { rarityColors, elementSymbols } from "../cards";
 
 export default function CardCell({ cell, r, c, flipClass, onClick }) {
   const getBorderColor = () => {
     if (!cell) return "border-gray-500";
-    return cell.owner === "P1" ? "border-blue-400" : "border-red-400";
+    return cell.owner === "P1" ? "border-blue-500" : "border-red-500";
   };
 
-  const getGradientStyle = () => {
+  const getCardBackgroundColor = () => {
     if (!cell) return {};
-    const elementColor = elementColors[cell.element] || "#666";
+    // Solid color background for clear ownership
     const ownerColor = cell.owner === "P1" ? "#3B82F6" : "#EF4444";
     return {
-      background: `linear-gradient(135deg, ${ownerColor} 0%, ${elementColor} 100%)`
+      backgroundColor: ownerColor
     };
   };
 
   return (
     <div
-      className={`w-32 h-32 border-4 ${getBorderColor()} flex items-center justify-center relative p-1 text-xs transition-all duration-300 rounded-lg cursor-pointer hover:scale-105 shadow-lg
+      className={`tt-card border-2 ${getBorderColor()} flex items-center justify-center relative p-1 text-xs transition-all duration-300 rounded-xl shadow-xl
         ${flipClass} ${
-        !cell ? "bg-gradient-to-br from-gray-800 to-gray-900" : ""
+        !cell ? "bg-gradient-to-br from-gray-800 to-gray-900 cursor-pointer hover:brightness-110" : "cursor-default"
       }`}
-      style={cell ? getGradientStyle() : {}}
+      style={{ ...(cell ? getCardBackgroundColor() : {}), width: 'var(--tt-card-w)', height: 'var(--tt-card-h)' }}
       onClick={onClick}
     >
       {cell ? (
-        <div className="w-full h-full flex flex-col items-center justify-between text-white relative bg-black/20 rounded p-1">
-          {/* Top Value */}
-          <div className="text-lg font-bold bg-black/50 rounded px-2 py-0.5">{cell.values.top}</div>
-          
-          {/* Middle Row: Left, Name, Right */}
-          <div className="flex items-center justify-between w-full px-1">
-            <div className="text-lg font-bold bg-black/50 rounded px-1.5 py-0.5">{cell.values.left}</div>
-            <div className="text-center flex-1 mx-1">
+        <div className="tt-card-inner w-full h-full">
+          {/* FRONT */}
+          <div className="tt-card-face tt-card-front w-full h-full flex flex-col items-center justify-between text-white relative rounded-lg overflow-hidden py-1">
+            <div className="absolute inset-0 ring-1 ring-white/20 rounded-lg pointer-events-none" />
+
+            {/* Background Image */}
+            {cell.image && (
+              <div className="absolute inset-0 opacity-40">
+                <img 
+                  src={cell.image} 
+                  alt={cell.name}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+            )}
+
+            {/* Top Value */}
+            <div className="text-lg font-bold bg-black/70 rounded px-2 py-0.5 z-10 shadow-lg">{cell.values.top}</div>
+
+            {/* Middle Row: Left, Element, Right */}
+            <div className="flex items-center justify-between w-full px-1 z-10">
+              <div className="text-lg font-bold bg-black/70 rounded px-1.5 py-0.5 shadow-lg">{cell.values.left}</div>
+              <div className="text-base">{elementSymbols[cell.element] || cell.element}</div>
+              <div className="text-lg font-bold bg-black/70 rounded px-1.5 py-0.5 shadow-lg">{cell.values.right}</div>
+            </div>
+
+            {/* Bottom Value */}
+            <div className="text-lg font-bold bg-black/70 rounded px-2 py-0.5 z-10 shadow-lg">{cell.values.bottom}</div>
+
+            {/* Name at Bottom */}
+            <div className="w-full z-10 px-1">
               <div 
-                className="text-[10px] font-bold leading-tight mb-0.5" 
+                className="text-[10px] font-bold leading-tight text-center drop-shadow-lg bg-black/60 rounded py-0.5 px-1 truncate" 
                 style={{ color: rarityColors[cell.rarity] || "#FFF" }}
               >
                 {cell.name}
               </div>
-              <div className="text-[8px] opacity-80">{cell.element}</div>
             </div>
-            <div className="text-lg font-bold bg-black/50 rounded px-1.5 py-0.5">{cell.values.right}</div>
           </div>
-          
-          {/* Bottom Value */}
-          <div className="text-lg font-bold bg-black/50 rounded px-2 py-0.5">{cell.values.bottom}</div>
+
+          {/* BACK */}
+          <div
+            className={`tt-card-face tt-card-back w-full h-full rounded-lg overflow-hidden flex items-center justify-center border border-white/10 bg-gradient-to-br from-slate-950/95 via-indigo-950/60 to-purple-950/80 ${
+              flipClass === "flip-vertical" ? "tt-back-vertical" : "tt-back-horizontal"
+            }`}
+          >
+            <div className="w-full h-full relative">
+              <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.18),transparent_55%)]" />
+              <div className="absolute inset-0 opacity-25 bg-[radial-gradient(circle_at_70%_70%,rgba(255,255,255,0.14),transparent_55%)]" />
+              <div className="absolute inset-x-0 bottom-0 h-10 bg-black/35" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-white/90 text-3xl font-black tracking-wider drop-shadow">TT</div>
+              </div>
+            </div>
+          </div>
         </div>
       ) : (
         <div className="text-gray-500 text-4xl opacity-30">+</div>
