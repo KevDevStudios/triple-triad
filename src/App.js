@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import StartScreen from "./StartScreen";
 import Game from "./Game";
 import useMusicPlayer from "./hooks/useMusicPlayer";
+import { DEFAULT_MODE_ID } from "./gameModes";
 
 export default function App() {
   const [showGame, setShowGame] = useState(false);
   const [difficulty, setDifficulty] = useState("easy");
+  const [gameMode, setGameMode] = useState(DEFAULT_MODE_ID);
   const mode = "PVE"; // Default to PVE for now
   const music = useMusicPlayer();
 
@@ -16,10 +18,18 @@ export default function App() {
           onStart={() => setShowGame(true)}
           onSelectDifficulty={setDifficulty}
           difficulty={difficulty}
+          gameMode={gameMode}
+          onSelectGameMode={setGameMode}
           music={music}
         />
       ) : (
-        <Game mode={mode} difficulty={difficulty} music={music} onBackToStart={() => setShowGame(false)} />
+        <Game
+          mode={mode}
+          difficulty={difficulty}
+          gameMode={gameMode}
+          music={music}
+          onBackToStart={() => setShowGame(false)}
+        />
       )}
     </div>
   );

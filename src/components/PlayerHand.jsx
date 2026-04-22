@@ -2,29 +2,34 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { rarityColors, elementSymbols } from '../cards';
 
-export default function PlayerHand({ cards, player, isActive, selectedCardIndex, onSelectCard }) {
+export default function PlayerHand({ cards, player, isActive, selectedCardIndex, onSelectCard, label, orientation = 'vertical' }) {
   if (!cards || cards.length === 0) return null;
 
-  const borderColor = player === "P1" ? "border-blue-500" : "border-red-500";
-  const glowColor = player === "P1" ? "shadow-blue-500/50" : "shadow-red-500/50";
-  const activePulseColor = player === "P1" ? "shadow-blue-400" : "shadow-red-400";
+  const borderColor = player === "P1" ? "border-blue-400/70" : "border-red-400/70";
+  const activeRing = player === "P1" ? "ring-blue-400/70 shadow-blue-500/40" : "ring-red-400/70 shadow-red-500/40";
   const bgColor = player === "P1" ? "#3B82F6" : "#EF4444";
+  const resolvedLabel = label || (player === "P1" ? "Your Hand" : "Opponent");
+  const isHorizontal = orientation === 'horizontal';
 
   return (
-    <div className={`bg-black/50 backdrop-blur-sm rounded-xl p-2 border-2 ${borderColor} flex flex-col h-full w-full transition-all duration-300
-      ${isActive ? `shadow-2xl ${glowColor} border-4 ${activePulseColor}` : ''}`}>
-      {/* Compact label */}
-      <div className="text-white text-xs font-bold text-center flex-shrink-0 mb-1">
-        {player === "P1" ? "🔵" : "🔴"}
+    <div className={`bg-black/50 backdrop-blur-md rounded-2xl p-2 border-2 ${borderColor} flex flex-col h-full w-full transition-all duration-300 ring-2 ring-transparent
+      ${isActive ? `shadow-2xl ${activeRing}` : 'opacity-90'}`}>
+      {/* Label */}
+      <div className="flex items-center justify-center gap-1.5 text-white text-[11px] font-semibold tracking-wide flex-shrink-0 mb-1.5 uppercase">
+        <span aria-hidden>{player === "P1" ? "🔵" : "🔴"}</span>
+        <span className="opacity-90">{resolvedLabel}</span>
+        {isActive && (
+          <span className="ml-1 inline-block w-1.5 h-1.5 rounded-full bg-yellow-300 animate-pulse" aria-hidden />
+        )}
       </div>
-      <div className="flex flex-col gap-1.5 items-center justify-center flex-1">
+      <div className={`${isHorizontal ? 'flex flex-row gap-1.5 justify-center flex-wrap' : 'flex flex-col gap-1.5 items-center justify-center'} flex-1`}>
           {cards.map((card, idx) => (
             <div
               key={idx}
               onClick={() => player === "P1" && isActive && onSelectCard && onSelectCard(idx)}
               className={`rounded-lg border-2 flex flex-col items-center justify-center text-white relative overflow-hidden transition-all duration-200 flex-shrink-0
-                ${player === "P1" && isActive ? 'cursor-pointer hover:scale-105 hover:brightness-110' : ''}
-                ${selectedCardIndex === idx ? 'ring-3 ring-yellow-400 ring-offset-1 ring-offset-black/50 scale-105 brightness-110' : 'border-white/30'}
+                ${player === "P1" && isActive ? 'cursor-pointer hover:scale-[1.06] hover:brightness-110 hover:-translate-y-0.5' : ''}
+                ${selectedCardIndex === idx ? 'ring-4 ring-yellow-300 ring-offset-2 ring-offset-black/60 scale-[1.06] brightness-110 -translate-y-0.5 shadow-lg shadow-yellow-400/30' : 'border-white/30'}
               `}
               style={{ backgroundColor: bgColor, width: 'var(--tt-hand-card-w)', height: 'var(--tt-hand-card-h)' }}
             >
@@ -79,4 +84,6 @@ PlayerHand.propTypes = {
   isActive: PropTypes.bool.isRequired,
   selectedCardIndex: PropTypes.number,
   onSelectCard: PropTypes.func,
+  label: PropTypes.string,
+  orientation: PropTypes.oneOf(['vertical', 'horizontal']),
 };

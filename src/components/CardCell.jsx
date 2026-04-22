@@ -3,9 +3,9 @@ import React from "react";
 import PropTypes from "prop-types";
 import { rarityColors, elementSymbols } from "../cards";
 
-export default function CardCell({ cell, r, c, flipClass, onClick }) {
+export default function CardCell({ cell, r, c, flipClass, onClick, highlight }) {
   const getBorderColor = () => {
-    if (!cell) return "border-gray-500";
+    if (!cell) return highlight ? "border-yellow-300/70" : "border-white/10";
     return cell.owner === "P1" ? "border-blue-500" : "border-red-500";
   };
 
@@ -22,7 +22,9 @@ export default function CardCell({ cell, r, c, flipClass, onClick }) {
     <div
       className={`tt-card border-2 ${getBorderColor()} flex items-center justify-center relative p-1 text-xs transition-all duration-300 rounded-xl shadow-xl
         ${flipClass} ${
-        !cell ? "bg-gradient-to-br from-gray-800 to-gray-900 cursor-pointer hover:brightness-110" : "cursor-default"
+        !cell
+          ? `bg-gradient-to-br from-gray-800/80 to-gray-900/80 cursor-pointer hover:brightness-110 hover:border-white/40 ${highlight ? 'ring-2 ring-yellow-300/60 animate-pulse' : ''}`
+          : "cursor-default"
       }`}
       style={{ ...(cell ? getCardBackgroundColor() : {}), width: 'var(--tt-card-w)', height: 'var(--tt-card-h)' }}
       onClick={onClick}
@@ -98,4 +100,5 @@ CardCell.propTypes = {
   c: PropTypes.number.isRequired,
   flipClass: PropTypes.string,
   onClick: PropTypes.func.isRequired,
+  highlight: PropTypes.bool,
 };

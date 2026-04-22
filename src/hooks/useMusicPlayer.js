@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 const DEFAULT_TRACKS = [
-  { id: 'default', name: 'Default', file: '/sounds/background-music.mp3', gain: 1.0 },
   // Game music - Chiptune, Action, Battle themes (CC0 from OpenGameArt)
+  // NOTE: the old "/sounds/background-music.mp3" default was a placeholder that
+  // was byte-identical to the card-flip SFX, which made game start sound like
+  // a card flipping on loop. Use a real music track as the default instead.
   { id: 'chiptune-stage-1', name: '🎮 Chiptune Stage 1', file: '/sounds/chiptune-stage-1.ogg', gain: 0.65 },
   { id: 'chiptune-stage-2', name: '🎮 Chiptune Stage 2', file: '/sounds/chiptune-stage-2.ogg', gain: 0.65 },
   { id: 'chiptune-boss', name: '⚔️ Chiptune Boss Fight', file: '/sounds/chiptune-boss-fight.ogg', gain: 0.7 },
@@ -34,7 +36,9 @@ export default function useMusicPlayer(tracks = DEFAULT_TRACKS) {
   });
   const [trackId, setTrackId] = useState(() => {
     const saved = localStorage.getItem('musicTrackId');
-    return saved || tracks[0]?.id || 'default';
+    // Migrate away from the old broken 'default' placeholder track.
+    if (!saved || saved === 'default') return tracks[0]?.id || '';
+    return saved;
   });
   const [volume, setVolume] = useState(() => {
     const saved = localStorage.getItem('musicVolume');
